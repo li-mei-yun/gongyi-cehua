@@ -1,0 +1,18 @@
+<View>
+  <Header value="拧紧曲线：扭矩—角度（实时绘制）" />
+  <Header value="横轴：角度（度）；纵轴：扭矩（N·m）。滚轮缩放、拖动平移、悬停读数。" size="5" />
+  <HyperText name="xy_live" value="$plot_url" valueType="url" inline="false" selectionEnabled="false" />
+  <View style="display:none">
+    <Text name="curve_info" value="$description" />
+    <TimeSeries name="ts" value="$series" valueType="json" timeColumn="sample_id">
+      <Channel column="torque_nm" />
+      <Channel column="angle_deg" />
+    </TimeSeries>
+  </View>
+  <Choices name="quality" toName="ts" choice="single" required="true" showInline="true">
+    <Choice value="正常曲线" /><Choice value="异常曲线" />
+  </Choices>
+  <Choices name="tightening_type" toName="ts" choice="single" required="true" showInline="true">
+    <Choice value="正常拧紧" /><Choice value="复拧" />
+  </Choices>
+</View>

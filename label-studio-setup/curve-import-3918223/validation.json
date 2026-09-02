@@ -1,0 +1,21 @@
+{
+  "filename": "3918223.xlsx",
+  "sample_count": 615,
+  "source_label_row": 2,
+  "labels": 0,
+  "curve_type": "initial",
+  "quality": "正常曲线",
+  "tightening_type": "正常拧紧",
+  "label_file_records": 12981,
+  "label_counts": {
+    "0|initial": 9848,
+    "1|initial": 92,
+    "0|retighten": 3041
+  },
+  "unique_label_filenames": 12981,
+  "source_hashes_unchanged": true,
+  "angle_decreases": 187,
+  "angle_repeats": 138,
+  "json_numeric_roundtrip": "all samples equal to extracted source",
+  "actual_label_studio_import": "not performed"
+}

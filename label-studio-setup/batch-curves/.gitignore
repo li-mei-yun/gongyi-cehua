@@ -1,0 +1,6 @@
+__pycache__/
+package*/
+test-output*/
+*.lock
+.mpl-cache/
+xy-preview/

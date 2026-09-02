@@ -1,0 +1,163 @@
+{
+  "dify_base_url": "http://127.0.0.1/v1",
+  "listen_host": "127.0.0.1",
+  "listen_port": 8501,
+  "open_browser": true,
+  "workflow_timeout_seconds": 300,
+  "scenes": [
+    {
+      "id": "hobbing_fixture",
+      "name": "滚齿机床·夹具推荐",
+      "description": "根据工件参数和支撑范围调用滚齿机床夹具工作流。",
+      "api_key": "请填写滚齿机床夹具Workflow的API Key",
+      "fields": [
+        {"type": "number", "variable": "workpiece_diameter", "label": "工件直径", "required": true},
+        {"type": "number", "variable": "module", "label": "工件模数", "required": true},
+        {"type": "number", "variable": "teeth_count", "label": "工件齿数", "required": true},
+        {"type": "number", "variable": "bore_diameter", "label": "工件内孔直径", "required": true},
+        {"type": "number", "variable": "workpiece_thickness", "label": "工件厚度", "required": true},
+        {"type": "number", "variable": "support_diameter_min", "label": "支撑垫支撑范围最小值", "required": true},
+        {"type": "number", "variable": "support_diameter_max", "label": "支撑垫支撑范围最大值", "required": true}
+      ]
+    },
+    {
+      "id": "guangkong",
+      "name": "光孔相似零件推荐",
+      "description": "根据齿轮及内孔特征，推荐相似度最高的前五个零件。",
+      "api_key": "请填写光孔Workflow的API Key",
+      "fields": [
+        {"type": "text-input", "variable": "neikong_tuzhi_zhijing", "label": "内孔图纸直径", "required": false},
+        {"type": "text-input", "variable": "chishu", "label": "齿数", "required": false},
+        {"type": "text-input", "variable": "moshu", "label": "模数", "required": false},
+        {"type": "text-input", "variable": "yalijiao", "label": "压力角", "required": false},
+        {"type": "text-input", "variable": "luoxuanjiao", "label": "螺旋角", "required": false},
+        {"type": "text-input", "variable": "dajing", "label": "大径", "required": false},
+        {"type": "text-input", "variable": "chilunjingdu", "label": "齿轮精度", "required": false},
+        {"type": "text-input", "variable": "tichi_M_zhi", "label": "剃齿M值", "required": false},
+        {"type": "text-input", "variable": "mochi_M_zhi", "label": "磨齿M值", "required": false}
+      ]
+    },
+    {
+      "id": "erzhou",
+      "name": "二轴相似零件推荐",
+      "description": "根据二轴齿轮参数推荐相似零件及工艺特征。",
+      "api_key": "请填写二轴Workflow的API Key",
+      "fields": [
+        {"type": "text-input", "variable": "neikong_tuzhi_zhijing", "label": "内孔图纸直径", "required": false},
+        {"type": "number", "variable": "chishu", "label": "齿数", "required": false},
+        {"type": "number", "variable": "moshu", "label": "模数", "required": false},
+        {"type": "number", "variable": "yalijiao", "label": "压力角", "required": false},
+        {"type": "number", "variable": "luoxuanjiao", "label": "螺旋角", "required": false},
+        {"type": "text-input", "variable": "dajing", "label": "大径", "required": false},
+        {"type": "text-input", "variable": "chilunjingdu", "label": "齿轮精度", "required": false},
+        {"type": "text-input", "variable": "tichi_M_zhi", "label": "剃齿M值", "required": false},
+        {"type": "text-input", "variable": "mochi_M_zhi", "label": "磨齿M值", "required": false}
+      ]
+    },
+    {
+      "id": "fuxiang_huajian_1",
+      "name": "副箱·花键 I",
+      "description": "根据花键 I 的齿数、模数、压力角、螺旋角和标准推荐相似零件。",
+      "api_key": "请填写副箱花键I Workflow的API Key",
+      "fields": [
+        {"type": "text-input", "variable": "chishu", "label": "齿数", "required": false},
+        {"type": "text-input", "variable": "moshu", "label": "模数", "required": false},
+        {"type": "text-input", "variable": "yalijiao", "label": "压力角", "required": false},
+        {"type": "text-input", "variable": "luoxuanjiao", "label": "螺旋角", "required": false},
+        {"type": "text-input", "variable": "biaozhun", "label": "标准", "required": false}
+      ]
+    },
+    {
+      "id": "fuxiang_huajian_2",
+      "name": "副箱·花键 II",
+      "description": "根据花键 II 的齿数、模数、压力角和螺旋角推荐相似零件。",
+      "api_key": "请填写副箱花键II Workflow的API Key",
+      "fields": [
+        {"type": "text-input", "variable": "chishu", "label": "齿数", "required": false},
+        {"type": "text-input", "variable": "moshu", "label": "模数", "required": false},
+        {"type": "text-input", "variable": "yalijiao", "label": "压力角", "required": false},
+        {"type": "text-input", "variable": "luoxuanjiao", "label": "螺旋角", "required": false}
+      ]
+    },
+    {
+      "id": "fuxiang_zhouchengkong",
+      "name": "副箱·轴承孔",
+      "description": "根据轴承孔孔径与孔深推荐相似零件。",
+      "api_key": "请填写副箱轴承孔Workflow的API Key",
+      "fields": [
+        {"type": "text-input", "variable": "zhouchengkong_kongjing", "label": "轴承孔_孔径", "required": false},
+        {"type": "text-input", "variable": "zhouchengkong_kongshen", "label": "轴承孔_孔深", "required": false}
+      ]
+    },
+    {
+      "id": "fuxiang_waiyuan",
+      "name": "副箱·外圆尺寸",
+      "description": "根据副箱外圆直径和两端中心孔特征推荐相似零件。",
+      "api_key": "请填写副箱外圆尺寸Workflow的API Key",
+      "fields": [
+        {"type": "text-input", "variable": "waiyuanzhijing1", "label": "花键I右侧第一个外圆直径", "required": false},
+        {"type": "text-input", "variable": "waiyuanzhijing2", "label": "花键I右侧第二个外圆直径", "required": false},
+        {"type": "text-input", "variable": "waiyuanzhijing3", "label": "花键I右侧第三个外圆直径", "required": false},
+        {"type": "text-input", "variable": "huajian_I_duan_zhongxinkong", "label": "花键I端中心孔", "required": false},
+        {"type": "text-input", "variable": "neiwailuowenduan_zhongxinkong", "label": "内外螺纹端中心孔", "required": false}
+      ]
+    },
+    {
+      "id": "zhongjianzhou",
+      "name": "中间轴·S档及AMT",
+      "description": "根据中间轴S档及AMT的轴段、齿圈段和齿部关键特征推荐相似零件。",
+      "api_key": "请填写中间轴S档及AMT Workflow的API Key",
+      "fields": [
+        {"type": "text-input", "variable": "zd_duanmianzuantangkong", "label": "轴头是否有端面钻镗孔", "required": false},
+        {"type": "text-input", "variable": "zd_duanmianxicao", "label": "轴段端面铣槽", "required": false},
+        {"type": "text-input", "variable": "zd_zhouchengwaiyuan", "label": "轴段轴承外圆", "required": false},
+        {"type": "text-input", "variable": "zd_kahuangjiegou", "label": "轴段卡簧结构", "required": false},
+        {"type": "text-input", "variable": "zd_dawaiyuan", "label": "轴段大外圆", "required": false},
+        {"type": "text-input", "variable": "cq_zhouchengwaiyuan", "label": "齿圈段轴承外圆", "required": false},
+        {"type": "text-input", "variable": "cq_zhouxiangchangdu", "label": "齿圈段轴向长度", "required": false},
+        {"type": "text-input", "variable": "cq_chaneihuajian", "label": "是否铲内花键", "required": false},
+        {"type": "text-input", "variable": "cq_xiquekou", "label": "是否铣缺口", "required": false},
+        {"type": "text-input", "variable": "cq_daodang_chibu", "label": "倒挡齿部参数", "required": false},
+        {"type": "text-input", "variable": "cq_yidang_chibu", "label": "一挡齿部参数", "required": false},
+        {"type": "text-input", "variable": "cq_chiquanjianzhoujing", "label": "两齿圈间轴径", "required": false},
+        {"type": "text-input", "variable": "cq_kaidangchicun", "label": "开档尺寸", "required": false},
+        {"type": "text-input", "variable": "cq_kahuangtaijiezhoujing", "label": "卡簧台阶轴径", "required": false}
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": "similar_parts",
+      "number": "01",
+      "name": "相似零件特征推荐",
+      "description": "根据零件关键参数调用对应 Dify Workflow，输出相似零件 Top5 和工艺特征。",
+      "status": "active",
+      "groups": [
+        {"id": "erzhou", "name": "二轴", "description": "二轴齿轮参数推荐", "scene_ids": ["erzhou"]},
+        {"id": "guangkong", "name": "光孔", "description": "光孔齿轮参数推荐", "scene_ids": ["guangkong"]},
+        {"id": "fuxiang", "name": "副箱", "description": "四类副箱特征推荐", "scene_ids": ["fuxiang_huajian_1", "fuxiang_huajian_2", "fuxiang_zhouchengkong", "fuxiang_waiyuan"]},
+        {"id": "zhongjianzhou", "name": "中间轴", "description": "中间轴各子场景特征推荐", "show_subscenes": true, "scene_ids": ["zhongjianzhou"]}
+      ]
+    },
+    {
+      "id": "quick_change_fixture",
+      "number": "02",
+      "name": "机床快换夹具推荐",
+      "description": "根据零件与工序特征推荐机床快换夹具。",
+      "status": "active",
+      "endpoint": "/api/modules/quick_change_fixture/run",
+      "groups": [
+        {"id": "hobbing_machine", "name": "滚齿机床", "description": "滚齿机床夹具推荐", "show_subscenes": true, "scene_ids": ["hobbing_fixture"]}
+      ]
+    },
+    {
+      "id": "tool_recommendation",
+      "number": "03",
+      "name": "刀具推荐",
+      "description": "根据材料、工序与加工参数推荐刀具及切削参数。",
+      "status": "planned",
+      "endpoint": "/api/modules/tool_recommendation/run",
+      "groups": []
+    }
+  ]
+}

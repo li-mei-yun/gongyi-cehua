@@ -1,0 +1,12 @@
+{
+  "repository": "heartexlabs/label-studio",
+  "tag": "latest",
+  "platform": "linux/amd64",
+  "manifest_digest": "sha256:20cec817e63144adec9f23d699bf4f33ce4249a56eb183ae4853d20fbd10fd93",
+  "config_digest": "sha256:1d509a55dd3dfee49ef138a0060b0093c60766e01473f9beb5f543e7aab0637b",
+  "compressed_bytes": 370712228,
+  "layers": 21,
+  "tls": "TLS1.2 with certificate verification",
+  "archive_sha256": "sha256:5da72467c2f090a5f28e7a957aa55f0e1d834b65b69c24766db5d26356566a38",
+  "archive_bytes": 1021921280
+}

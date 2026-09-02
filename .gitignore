@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+config.json
+node_modules/
+.idea/
+.pytest_cache/
+
+# Generated Label Studio artifacts and caches
+label-studio-setup/image-cache/
+label-studio-setup/label-studio-linux-amd64.tar
+**/conversion_cache.sqlite3

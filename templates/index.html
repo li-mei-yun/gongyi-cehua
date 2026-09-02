@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>工艺策划助手</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-mark">工</div>
+      <div class="brand-copy">
+        <h1>工艺策划助手</h1>
+        <p>相似零件 · 快换夹具 · 刀具推荐</p>
+      </div>
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span>本地 Dify 服务</span>
+        <strong id="connectionBadge">正在连接</strong>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="hero-panel">
+      <div>
+        <span class="eyebrow">PROCESS PLANNING COPILOT</span>
+        <h2>智能工艺策划推荐助手</h2>
+        <p>选择业务模块和零件场景，系统将调用对应的 Dify Workflow 完成特征匹配与专业报告生成。</p>
+      </div>
+      <div class="hero-stats">
+        <div><strong>3</strong><span>业务模块</span></div>
+        <div><strong id="workflowCount">7</strong><span>推荐场景</span></div>
+        <div><strong>Top 5</strong><span>相似零件</span></div>
+      </div>
+    </section>
+
+    <section class="module-section">
+      <div class="section-heading">
+        <div>
+          <span class="section-index">01</span>
+          <div><h2>选择工艺策划模块</h2><p>已接入模块可直接使用，规划模块已预留页面和调用接口。</p></div>
+        </div>
+      </div>
+      <div id="moduleGrid" class="module-grid">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </section>
+
+    <section id="similarWorkspace" class="workspace hidden">
+      <aside class="card scene-panel">
+        <div class="panel-heading">
+          <span class="section-index">02</span>
+          <div><h2 id="categoryTitle">零件分类</h2><p id="categoryDescription">选择需要进行特征推荐的零件类别</p></div>
+        </div>
+        <div id="groupList" class="group-list"></div>
+        <div id="subSceneBlock" class="subscene-block hidden">
+          <div id="subSceneTitle" class="subscene-title">子场景</div>
+          <div id="subSceneList" class="subscene-list"></div>
+        </div>
+      </aside>
+
+      <div class="workspace-main">
+        <section id="formCard" class="card form-card">
+          <div class="panel-heading form-heading">
+            <div class="heading-copy">
+              <span class="section-index">03</span>
+              <div>
+                <h2 id="formTitle">填写零件特征</h2>
+                <p id="sceneDescription">选择左侧零件分类后填写参数</p>
+              </div>
+            </div>
+            <span id="formSource" class="badge badge-neutral">等待加载</span>
+          </div>
+
+          <div id="formNotice" class="notice hidden"></div>
+          <form id="recommendForm">
+            <div id="dynamicFields" class="field-grid">
+              <div class="empty-state">正在加载工作流目录……</div>
+            </div>
+            <div class="actions">
+              <button id="runButton" class="primary-button" type="submit" disabled>开始相似零件推荐</button>
+              <button id="clearButton" class="secondary-button" type="button">清空输入</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="resultCard" class="card result-card hidden">
+          <div class="panel-heading result-heading">
+            <div class="heading-copy">
+              <span class="section-index">04</span>
+              <div><h2>推荐结果</h2><p id="resultDescription">相似零件 Top5 与工艺特征报告</p></div>
+            </div>
+            <div class="result-tools">
+              <span id="runMeta" class="badge badge-success"></span>
+              <button id="downloadButton" class="text-button" type="button">下载报告</button>
+            </div>
+          </div>
+          <article id="resultContent" class="markdown-body"></article>
+        </section>
+      </div>
+    </section>
+
+    <section id="plannedWorkspace" class="card planned-workspace hidden">
+      <div class="planned-number" id="plannedNumber">02</div>
+      <div class="planned-content">
+        <span class="planned-tag">模块建设中</span>
+        <h2 id="plannedTitle">机床快换夹具推荐</h2>
+        <p id="plannedDescription"></p>
+        <div class="reserved-interface">
+          <span>已预留调用接口</span>
+          <code id="plannedEndpoint"></code>
+        </div>
+      </div>
+      <div class="planned-steps">
+        <span>页面入口</span><i></i><span>输入表单</span><i></i><span>Dify Workflow</span><i></i><span>推荐结果</span>
+      </div>
+    </section>
+
+    <section id="errorCard" class="card error-card hidden">
+      <h2>运行失败</h2>
+      <p id="errorMessage"></p>
+    </section>
+  </main>
+
+  <div id="loadingMask" class="loading-mask hidden">
+    <div class="loader"></div>
+    <strong>正在执行 Dify Workflow</strong>
+    <span>相似度计算和大模型生成可能需要一些时间，请稍候。</span>
+  </div>
+
+  <script>
+    const state = {
+      modules: [],
+      scenes: [],
+      fields: [],
+      activeModuleId: "",
+      activeGroupId: "",
+      activeSceneId: "",
+      lastOutputText: "",
+      lastSceneName: "推荐结果"
+    };
+    let formRequestVersion = 0;
+
+    const moduleGrid = document.getElementById("moduleGrid");
+    const similarWorkspace = document.getElementById("similarWorkspace");
+    const plannedWorkspace = document.getElementById("plannedWorkspace");
+    const groupList = document.getElementById("groupList");
+    const subSceneBlock = document.getElementById("subSceneBlock");
+    const subSceneList = document.getElementById("subSceneList");
+    const dynamicFields = document.getElementById("dynamicFields");
+    const runButton = document.getElementById("runButton");
+    const clearButton = document.getElementById("clearButton");
+    const formNotice = document.getElementById("formNotice");
+    const resultCard = document.getElementById("resultCard");
+    const errorCard = document.getElementById("errorCard");
+    const loadingMask = document.getElementById("loadingMask");
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, { cache: "no-store", ...options });
+      const data = await response.json().catch(() => ({ error: "服务器返回内容无法解析" }));
+      if (!response.ok || data.ok === false) {
+        throw new Error(data.error || `请求失败（HTTP ${response.status}）`);
+      }
+      return data;
+    }
+
+    function showError(message) {
+      document.getElementById("errorMessage").textContent = message;
+      errorCard.classList.remove("hidden");
+      errorCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function hideMessages() {
+      errorCard.classList.add("hidden");
+      resultCard.classList.add("hidden");
+    }
+
+    function getActiveModule() {
+      return state.modules.find(item => item.id === state.activeModuleId);
+    }
+
+    function getActiveScene() {
+      return state.scenes.find(item => item.id === state.activeSceneId);
+    }
+
+    function renderModules() {
+      moduleGrid.innerHTML = "";
+      for (const module of state.modules) {
+        const button = document.createElement("button");
+        const planned = module.status !== "active";
+        button.type = "button";
+        button.className = `module-card module-${module.number} ${planned ? "is-planned" : ""}`;
+        button.dataset.moduleId = module.id;
+        button.innerHTML = `
+          <span class="module-number">${module.number}</span>
+          <span class="module-copy">
+            <strong>${module.name}</strong>
+            <small>${module.description}</small>
+          </span>
+          <span class="module-status">${planned ? "接口已预留" : "已接入"}</span>
+          <span class="module-arrow">→</span>`;
+        button.addEventListener("click", () => selectModule(module.id));
+        moduleGrid.appendChild(button);
+      }
+    }
+
+    function selectModule(moduleId) {
+      formRequestVersion++;
+      state.activeModuleId = moduleId;
+      state.activeSceneId = "";
+      state.fields = [];
+      hideMessages();
+      document.querySelectorAll(".module-card").forEach(card => {
+        card.classList.toggle("active", card.dataset.moduleId === moduleId);
+      });
+
+      const module = getActiveModule();
+      const isFixture = moduleId === "quick_change_fixture";
+      document.getElementById("categoryTitle").textContent = isFixture ? "机床分类" : "零件分类";
+      document.getElementById("categoryDescription").textContent = isFixture ? "选择机床及夹具推荐子场景" : "选择需要进行特征推荐的零件类别";
+      document.getElementById("resultDescription").textContent = isFixture ? "滚齿机床夹具推荐报告" : "相似零件 Top5 与工艺特征报告";
+      if (module.status === "active") {
+        similarWorkspace.classList.remove("hidden");
+        plannedWorkspace.classList.add("hidden");
+        renderGroups(module.groups || []);
+        const firstGroup = (module.groups || []).find(group => group.status !== "planned") || module.groups?.[0];
+        if (firstGroup) selectGroup(firstGroup.id);
+      } else {
+        similarWorkspace.classList.add("hidden");
+        plannedWorkspace.classList.remove("hidden");
+        document.getElementById("plannedNumber").textContent = module.number;
+        document.getElementById("plannedTitle").textContent = module.name;
+        document.getElementById("plannedDescription").textContent = module.description;
+        document.getElementById("plannedEndpoint").textContent = `POST ${module.endpoint}`;
+      }
+    }
+
+    function renderGroups(groups) {
+      groupList.innerHTML = "";
+      for (const group of groups) {
+        const button = document.createElement("button");
+        const planned = group.status === "planned";
+        button.type = "button";
+        button.className = `group-item ${planned ? "is-planned" : ""}`;
+        button.dataset.groupId = group.id;
+        button.innerHTML = `
+          <span class="group-glyph">${group.name.slice(0, 1)}</span>
+          <span><strong>${group.name}</strong><small>${group.description || ""}</small></span>
+          <em>${planned ? "待接入" : (group.scene_ids?.length > 1 ? `${group.scene_ids.length} 个工作流` : "已建工作流")}</em>`;
+        button.addEventListener("click", () => selectGroup(group.id));
+        groupList.appendChild(button);
+      }
+    }
+
+    function selectGroup(groupId) {
+      formRequestVersion++;
+      state.activeGroupId = groupId;
+      state.activeSceneId = "";
+      hideMessages();
+      document.querySelectorAll(".group-item").forEach(item => {
+        item.classList.toggle("active", item.dataset.groupId === groupId);
+      });
+
+      const group = getActiveModule().groups.find(item => item.id === groupId);
+      if (group.status === "planned") {
+        subSceneBlock.classList.add("hidden");
+        showReservedGroup(group);
+        return;
+      }
+
+      const scenes = (group.scene_ids || []).map(id => state.scenes.find(scene => scene.id === id)).filter(Boolean);
+      if (scenes.length > 1 || group.show_subscenes) {
+        subSceneBlock.classList.remove("hidden");
+        document.getElementById("subSceneTitle").textContent = `${group.name}子场景`;
+        renderSubScenes(scenes, group);
+      } else {
+        subSceneBlock.classList.add("hidden");
+      }
+      if (scenes.length) selectScene(scenes[0].id);
+    }
+
+    function renderSubScenes(scenes, group) {
+      subSceneList.innerHTML = "";
+      for (const scene of scenes) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "subscene-item";
+        button.dataset.sceneId = scene.id;
+        button.innerHTML = `<span>${scene.name.replace(`${group.name}·`, "")}</span><i class="config-dot ${scene.configured ? "ready" : ""}"></i>`;
+        button.title = scene.configured ? "已配置 API Key" : "待配置 API Key";
+        button.addEventListener("click", () => selectScene(scene.id));
+        subSceneList.appendChild(button);
+      }
+    }
+
+    function showReservedGroup(group) {
+      state.fields = [];
+      document.getElementById("formTitle").textContent = `${group.name}相似零件推荐`;
+      document.getElementById("sceneDescription").textContent = group.description;
+      document.getElementById("formSource").textContent = "位置已预留";
+      document.getElementById("formSource").className = "badge badge-neutral";
+      formNotice.classList.add("hidden");
+      dynamicFields.innerHTML = `
+        <div class="reserved-scene empty-state">
+          <strong>${group.name} Workflow 尚未建立</strong>
+          <span>后续只需增加 Dify Workflow 和 API Key，即可沿用当前动态表单与报告界面。</span>
+          <code>POST /api/scenes/zhongjianzhou/run</code>
+        </div>`;
+      runButton.disabled = true;
+      runButton.textContent = "等待接入 Workflow";
+    }
+
+    function selectScene(sceneId) {
+      state.activeSceneId = sceneId;
+      document.querySelectorAll(".subscene-item").forEach(item => {
+        item.classList.toggle("active", item.dataset.sceneId === sceneId);
+      });
+      loadSceneForm();
+    }
+
+    function createField(field) {
+      const wrapper = document.createElement("div");
+      wrapper.className = field.type === "paragraph" ? "field-item field-wide" : "field-item";
+
+      const label = document.createElement("label");
+      label.className = "field-label";
+      label.htmlFor = `field-${field.variable}`;
+      label.textContent = field.label;
+      if (field.required) {
+        const required = document.createElement("em");
+        required.textContent = "*";
+        label.appendChild(required);
+      }
+      wrapper.appendChild(label);
+
+      let input;
+      if (field.type === "select") {
+        input = document.createElement("select");
+        if (!field.required) input.appendChild(new Option("请选择（可选）", ""));
+        for (const option of field.options || []) {
+          const value = typeof option === "object" ? option.value : option;
+          const text = typeof option === "object" ? (option.label || option.value) : option;
+          input.appendChild(new Option(text, value));
+        }
+      } else if (field.type === "paragraph") {
+        input = document.createElement("textarea");
+        input.rows = 4;
+      } else {
+        input = document.createElement("input");
+        input.type = field.type === "number" ? "number" : "text";
+        if (field.type === "number") input.step = "any";
+      }
+
+      input.id = `field-${field.variable}`;
+      input.name = field.variable;
+      input.className = "form-control";
+      input.required = field.required;
+      input.value = field.default ?? "";
+      input.placeholder = field.placeholder || `请输入${field.label}`;
+      if (field.max_length && input.type !== "number" && input.tagName !== "SELECT") input.maxLength = field.max_length;
+      wrapper.appendChild(input);
+
+      const variable = document.createElement("span");
+      variable.className = "variable-name";
+      variable.textContent = field.variable;
+      wrapper.appendChild(variable);
+      return wrapper;
+    }
+
+    function renderFields(fields) {
+      dynamicFields.innerHTML = "";
+      if (!fields.length) {
+        dynamicFields.innerHTML = '<div class="empty-state">当前场景没有可填写的输入字段</div>';
+        return;
+      }
+      for (const field of fields) dynamicFields.appendChild(createField(field));
+    }
+
+    async function loadSceneForm() {
+      const version = ++formRequestVersion;
+      const scene = getActiveScene();
+      if (!scene) return;
+      document.getElementById("formTitle").textContent = scene.name;
+      document.getElementById("sceneDescription").textContent = scene.description;
+      runButton.disabled = true;
+      runButton.textContent = "正在读取表单……";
+      dynamicFields.innerHTML = '<div class="empty-state">正在读取 Dify Workflow 表单……</div>';
+      formNotice.classList.add("hidden");
+      hideMessages();
+
+      try {
+        const data = await requestJson(`/api/scenes/${encodeURIComponent(scene.id)}/form`);
+        if (version !== formRequestVersion) return;
+        state.fields = data.fields;
+        renderFields(data.fields);
+        const source = document.getElementById("formSource");
+        source.textContent = data.source === "dify" ? "Dify 动态表单" : "DSL 备用表单";
+        source.className = data.source === "dify" ? "badge badge-success" : "badge badge-neutral";
+        if (data.warning) {
+          formNotice.textContent = data.warning;
+          formNotice.classList.remove("hidden");
+        }
+        runButton.disabled = !scene.configured || data.fields.length === 0;
+        runButton.textContent = scene.configured ? (state.activeModuleId === "quick_change_fixture" ? "开始夹具推荐" : "开始相似零件推荐") : "待配置该 Workflow 的 API Key";
+      } catch (error) {
+        if (version !== formRequestVersion) return;
+        state.fields = [];
+        dynamicFields.innerHTML = '<div class="empty-state">表单读取失败</div>';
+        runButton.disabled = true;
+        runButton.textContent = "暂不可用";
+        showError(error.message);
+      }
+    }
+
+    async function loadCatalog() {
+      try {
+        const data = await requestJson("/api/catalog");
+        state.modules = data.modules;
+        state.scenes = data.scenes;
+        document.getElementById("connectionBadge").textContent = data.dify_base_url;
+        document.getElementById("workflowCount").textContent = data.scenes.length;
+        renderModules();
+        const initial = data.modules.find(module => module.status === "active") || data.modules[0];
+        if (initial) selectModule(initial.id);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    clearButton.addEventListener("click", () => {
+      document.getElementById("recommendForm").reset();
+      hideMessages();
+    });
+
+    document.getElementById("recommendForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const scene = getActiveScene();
+      if (!scene) return;
+      hideMessages();
+
+      const formData = new FormData(event.currentTarget);
+      const inputs = {};
+      for (const field of state.fields) {
+        const value = formData.get(field.variable);
+        if (value !== null && String(value).trim() !== "") inputs[field.variable] = String(value).trim();
+      }
+
+      loadingMask.classList.remove("hidden");
+      runButton.disabled = true;
+      try {
+        const data = await requestJson(`/api/scenes/${encodeURIComponent(scene.id)}/run`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs })
+        });
+        state.lastOutputText = data.output_text;
+        state.lastSceneName = data.scene;
+        document.getElementById("resultContent").innerHTML = data.output_html;
+        const elapsed = data.elapsed_time == null ? "" : ` · ${data.elapsed_time} 秒`;
+        document.getElementById("runMeta").textContent = `运行成功${elapsed}`;
+        resultCard.classList.remove("hidden");
+        resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        loadingMask.classList.add("hidden");
+        runButton.disabled = !scene.configured;
+      }
+    });
+
+    document.getElementById("downloadButton").addEventListener("click", () => {
+      if (!state.lastOutputText) return;
+      const blob = new Blob([state.lastOutputText], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${state.lastSceneName}-推荐报告.md`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    });
+
+    loadCatalog();
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+__pycache__/
+image-cache/
+*.tar
+*.tar.part
+*.log
+containers-*.txt

@@ -1,0 +1,22 @@
+<View>
+  <Header value="拧紧曲线：扭矩—角度" />
+  <Header value="横轴：角度（度）；纵轴：扭矩（N·m）。曲线按原始采样顺序连接。" size="5" />
+  <Image name="xy_plot" value="$angle_torque_plot" zoom="true" zoomControl="true" rotateControl="false" />
+  <View style="display:none">
+    <Text name="curve_info" value="$description" />
+    <TimeSeries name="ts" value="$series" valueType="json" timeColumn="sample_id" timeDisplayFormat=".0f" fixedScale="true">
+      <Channel column="torque_nm" legend="扭矩" units="N·m" displayFormat=".3f" strokeColor="#2563eb" height="220" />
+      <Channel column="angle_deg" legend="角度" units="度" displayFormat=".3f" strokeColor="#d97706" height="220" />
+    </TimeSeries>
+  </View>
+  <Header value="曲线质量（labels）" size="4" />
+  <Choices name="quality" toName="ts" choice="single" required="true" showInline="true">
+    <Choice value="正常曲线" />
+    <Choice value="异常曲线" />
+  </Choices>
+  <Header value="拧紧类型（curve_type）；复拧不等于异常" size="4" />
+  <Choices name="tightening_type" toName="ts" choice="single" required="true" showInline="true">
+    <Choice value="正常拧紧" />
+    <Choice value="复拧" />
+  </Choices>
+</View>
